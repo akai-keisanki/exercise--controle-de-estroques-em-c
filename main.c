@@ -2,16 +2,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #define NUMBER_ERR fputs ("Por favor, digite um número válido.\n", stderr)
 
 signed menu (void);
 
-typedef struct Product
+typedef
+struct Product
 {
   char* name;
   size_t amount;
-} Product;
+}
+Product;
 
 static
 Product prod[0x1000];
@@ -25,7 +28,8 @@ signed update_file ()
   if (f == NULL) return 1;
 
   for (size_t i = 0; i < prod_amount; i ++)
-    fprintf (f, "%s\n%lu\n", prod[i].name, prod[i].amount);
+    if (prod[i].amount != 0)
+      fprintf (f, "%s\n%lu\n", prod[i].name, prod[i].amount);
 
   fclose (f);
   return 0;
@@ -41,11 +45,14 @@ signed read_file ()
 
   prod_amount = 0;
 
-  while (scanf("%s\n%lu\n", name, &amount) == 2)
+  while (fscanf(f, "%s\n%lu\n", name, &amount) == 2)
   {
     prod[prod_amount] = (Product) {name, amount};
     prod_amount ++;
+    name = malloc (sizeof(char) * 0x40);
   }
+
+  free(name);
 
   fclose (f);
   return 0;
@@ -55,13 +62,14 @@ signed read_file ()
 signed add_item (const Product p)
 {
   for (size_t i = 0; i < prod_amount; i ++)
-    if (prod[i].name == p.name)
+    if (!strcmp(prod[i].name, p.name))
     {
       prod[i].amount += p.amount;
       return 0;
     }
 
-  prod[prod_amount] = p;
+  prod[prod_amount].name = p.name;
+  prod[prod_amount].amount = p.amount;
   prod_amount ++;
 
   return 0;
@@ -70,7 +78,7 @@ signed add_item (const Product p)
 long long remove_item (const Product p)
 {
   for (size_t i = 0; i < prod_amount; i ++)
-    if (prod[i].name == p.name)
+    if (!strcmp(prod[i].name, p.name))
     {
       if (prod[i].amount < p.amount) return prod[i].amount;
       else
@@ -132,8 +140,6 @@ signed do_op (const uint8_t op)
     else
       fputs ("Não foi possível adicionar o ítem.\n", stderr);
 
-    free(name);
-
     break;
 
   case 2:
@@ -155,8 +161,6 @@ signed do_op (const uint8_t op)
       fprintf (stderr, "Estoque insuficiente. Quantidade disponível: %lld\n", r);
     else
       fputs ("Não foi possível remover o ítem.\n", stderr);
-
-    free(name);
 
     break;
 
