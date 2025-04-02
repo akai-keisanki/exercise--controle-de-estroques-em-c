@@ -41,7 +41,7 @@ signed read_file ()
 
   prod_amount = 0;
 
-  while (scanf("%s\n%lu\n", name, &amount))
+  while (scanf("%s\n%lu\n", name, &amount) == 2)
   {
     prod[prod_amount] = (Product) {name, amount};
     prod_amount ++;
@@ -175,6 +175,8 @@ signed do_op (const uint8_t op)
 
     if (!btmp)
       printf ("O estoque está vazio.\n");
+
+    break;
 
   case 4:
       return 0;
